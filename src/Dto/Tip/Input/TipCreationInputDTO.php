@@ -12,12 +12,10 @@ class TipCreationInputDTO {
     public string $content;
 
     #[Assert\NotBlank(message: "field monthsNums is required")]
-    #[Assert\Count(
-        min: 1,
-        max: 12,
-        minMessage: 'You must specify at least {{ limit }} month',
-        maxMessage: 'You cannot specify more than {{ limit }} month',
-    )]
+    #[Assert\All([
+        new Assert\Type('integer'),
+        new Assert\Range(min: 1, max: 12),
+    ])]
     public array $monthsNums;
 
     public function getContent(): string

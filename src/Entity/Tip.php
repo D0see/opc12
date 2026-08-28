@@ -46,6 +46,12 @@ class Tip
         return $this->months;
     }
 
+    public function setMonths(Collection $months): static
+    {
+        $this->months = $months;
+        return $this;
+    }
+
     public function addMonth(Month $month): static
     {
         if (!$this->months->contains($month)) {
