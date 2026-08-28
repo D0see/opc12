@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use ErrorHelper;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -24,7 +25,7 @@ class UserService {
      * @param string $username
      * @param string $password clear password
      * @param string $code the postalCode code
-     * @return void
+     * @return User
      */
     public function createUser(
         string $username,
@@ -32,9 +33,9 @@ class UserService {
         string $code
     ): User {
 
-        $userSharingusername = $this->userRepository->findOneBy(['login' => $username]);
+        $userSharingUsername = $this->userRepository->findOneBy(['login' => $username]);
 
-        if ($userSharingusername !== null) {
+        if ($userSharingUsername !== null) {
             throw new HttpException(statusCode: Response::HTTP_CONFLICT, message: "this username is already taken");
         }
 
@@ -47,7 +48,10 @@ class UserService {
         $errors = $this->validator->validate($user);
 
         if (count($errors) > 0) {
-            throw new HttpException(statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, message: json_encode($errors));
+            throw new HttpException(
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, 
+                message: ErrorHelper::spreadContraintViolationsMessages($errors)
+            );
         }
 
         $user->setPassword($this->userPasswordHasher->hashPassword($user, $password));

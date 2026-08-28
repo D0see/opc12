@@ -16,7 +16,7 @@ class UserCreationInputDTO {
     public string $password;
 
     #[Assert\NotBlank(message: "field postalCode is required")]
-    #[Assert\Length(min: 5, max: 5, minMessage: "The postalCode must contain 5 numbers", maxMessage: "The postalCode must contain 5 numbers")]
+    #[Assert\Length(min: 5, max: 5, minMessage: "The postalCode must contain {{ limit }} numbers", maxMessage: "The postalCode must contain {{ limit }} numbers")]
     public string $postalCode;
 
     public function getUsername(): string
