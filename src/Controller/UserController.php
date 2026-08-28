@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\User\Input\UserCreationInputDTO;
 use App\Service\UserService;
+use ErrorHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +33,10 @@ final class UserController extends AbstractController
         $errors = $this->validator->validate($userCreationInputDTO);
 
         if (count($errors) > 0) {
-            throw new HttpException(statusCode: Response::HTTP_BAD_REQUEST, message: json_encode($errors));
+            throw new HttpException(
+                statusCode: Response::HTTP_BAD_REQUEST, 
+                message: ErrorHelper::spreadContraintViolationsMessages($errors)
+            );
         }
 
         $this->userService->createUser(
