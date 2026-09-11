@@ -3,7 +3,6 @@
 namespace App\Client\WeatherBit\Entity\HistoryDaily;
 
 use App\Client\WeatherBit\Entity\HistoryDaily\Dto\Output\CurrentWeatherDTO;
-use App\Client\WeatherBit\Entity\HistoryDaily\Dto\Output\HistoryDailyOuputDTO;
 use App\Client\WeatherBit\WeatherBitHttpClient;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
