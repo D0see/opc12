@@ -16,6 +16,19 @@ class TipRepository extends ServiceEntityRepository
         parent::__construct($registry, Tip::class);
     }
 
+    /**
+     * @return Tip[]
+     */
+    public function findByMonthNum(int $monthNum): array
+    {
+        return $this->createQueryBuilder('tip')
+            ->innerJoin('tip.months', 'month')
+            ->andWhere('month.num = :monthNum')
+            ->setParameter('monthNum', $monthNum)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Tip[] Returns an array of Tip objects
 //     */

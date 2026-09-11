@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Tip;
+use App\Entity\User;
 use App\Repository\MonthRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,7 @@ class TipService {
     public function createTip(
         string $content,
         array $monthsNums,
+        User $user
     ): Tip {
 
         $months = $this->monthRepository->findBy(['num' => $monthsNums]);
@@ -30,7 +32,8 @@ class TipService {
 
         $tip = (new Tip())
         ->setContent($content)
-        ->setMonths(new ArrayCollection($months));
+        ->setMonths(new ArrayCollection($months))
+        ->setUser($user);
 
         $errors = $this->validator->validate($tip);
 
@@ -46,5 +49,12 @@ class TipService {
         $this->entityManager->flush();
         
         return $tip;
+    }
+
+    public function deleteTip(Tip $tip) {
+        
+        $this->entityManager->remove($tip);
+
+        $this->entityManager->flush();
     }
 }

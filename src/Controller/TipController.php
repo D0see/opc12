@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use ErrorHelper;
 use App\Dto\Tip\Input\TipCreationInputDTO;
-use App\Repository\MonthRepository;
+use App\Dto\Tip\Mapper\TipMapper;
+use App\Entity\Tip;
 use App\Repository\TipRepository;
 use App\Service\TipService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +27,8 @@ final class TipController extends AbstractController
         private readonly SerializerInterface $serializer,
         private readonly TipService $tipService,
         private readonly TipRepository $tipRepository,
-        private readonly MonthRepository $monthRepository
+        private readonly TipMapper $tipMapper,
+        private readonly Security $security
     ){}
 
     #[Route(name: 'tip_create', methods: ['POST'])]
@@ -44,12 +47,16 @@ final class TipController extends AbstractController
             );
         }
 
-        $this->tipService->createTip(
+        $tip = $this->tipService->createTip(
             content: $tipCreationInputDTO->getContent(),
-            monthsNums: $tipCreationInputDTO->getMonthsNums()
+            monthsNums: $tipCreationInputDTO->getMonthsNums(),
+            user: $this->security->getUser()
         );
         
-        return new JsonResponse(status: Response::HTTP_CREATED);
+        return new JsonResponse(
+            data: $this->tipMapper->TipToOutputDTO($tip),
+            status: Response::HTTP_CREATED
+        );
     }
 
     #[Route(path: '/{monthNum}', methods: ['GET'], name: 'get_tip_per_month')]
@@ -57,34 +64,42 @@ final class TipController extends AbstractController
         int $monthNum
     ): JsonResponse
     {   
-        $month = $this->monthRepository->findOneBy(['num' => $monthNum]);
+        $tips = $this->tipRepository->findByMonthNum($monthNum);
 
-        $tips = $this->tipRepository->findBy(
-            [
-                'months' => $month
-            ]
+        return new JsonResponse(
+            data: array_map(
+                callback: fn(Tip $tip) => $this->tipMapper->TipToOutputDTO($tip),
+                array: $tips
+            )
         );
-
-        return new JsonResponse();
     }
 
     #[Route(path: '/', methods: ['GET'], name: 'get_tips_for_current_month')]
     public function getTipsForCurrentMonth(
-
     ): JsonResponse
     {   
-        $month = $this->monthRepository->findOneBy(
-            [
-                'num' => (int) (new \DateTime('now'))->format('m')
-            ]
+        $tips = $this->tipRepository->findByMonthNum((int) (new \DateTime('now'))->format('m'));
+
+        $data = array_map(
+            callback: fn(Tip $tip) => $this->tipMapper->TipToOutputDTO($tip),
+            array: $tips
         );
 
-        $tips = $this->tipRepository->findBy(
-            [
-                'months' => $month
-            ]
+        return new JsonResponse(
+            data: $data
         );
+    }
 
-        return new JsonResponse();
+    #[Route(path: '/{tip}', methods: ['DELETE'], name: 'delete_tip')]
+    public function deleteTipById(
+        Tip $tip
+    ): JsonResponse
+    {   
+
+        $this->tipService->deleteTip($tip);
+        
+        return new JsonResponse(
+            status: Response::HTTP_OK
+        );
     }
 }
