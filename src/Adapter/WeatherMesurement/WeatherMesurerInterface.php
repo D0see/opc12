@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Service\WeatherMesurement;
+namespace App\Adapter\WeatherMesurement;
 
 use App\Dto\WeatherMesurement\WeatherMesurementDTO;
 
-interface WeatherMesurementInterface {
+interface WeatherMesurerInterface {
     public function getWeatherMesurement(string $postalCode): WeatherMesurementDTO;
 }
