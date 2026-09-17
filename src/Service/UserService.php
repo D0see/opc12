@@ -43,7 +43,8 @@ class UserService {
 
         $user = (new User())
         ->setLogin($username)
-        ->setPostalCode($postalCode);
+        ->setPostalCode($postalCode)
+        ->setRoles(['ROLE_USER']);
 
         $errors = $this->validator->validate($user);
 
@@ -61,5 +62,54 @@ class UserService {
         $this->entityManager->flush();
         
         return $user;
+    }
+
+    public function modifyUser(
+        ?string $username,
+        ?string $password,
+        ?string $code,
+        User $user
+    ): User {
+
+        if ($username !== null) {
+            $userSharingUsername = $this->userRepository->findOneBy(['login' => $username]);
+
+            if ($userSharingUsername !== null && $userSharingUsername->getId() !== $user->getId()) {
+                throw new HttpException(statusCode: Response::HTTP_CONFLICT, message: "this username is already taken");
+            }
+
+            $user->setLogin($username);
+        }
+
+        if ($code !== null) {
+            $postalCode = $this->postalCodeService->findOrCreatePostalCode($code);
+        }
+
+        if ($password !== null) {
+            $user->setPassword($this->userPasswordHasher->hashPassword($user, $password));
+        }
+
+        $errors = $this->validator->validate($user);
+
+        if (count($errors) > 0) {
+            throw new HttpException(
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, 
+                message: ErrorHelper::spreadContraintViolationsMessages($errors)
+            );
+        }
+
+        $this->entityManager->flush();
+        
+        return $user;
+    }
+
+    public function deleteUser(
+        User $user
+    ): void {
+
+        $this->entityManager->remove($user);
+
+        $this->entityManager->flush();
+
     }
 }

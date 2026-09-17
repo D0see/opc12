@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use ErrorHelper;
 use App\Dto\Tip\Input\TipCreationInputDTO;
+use App\Dto\Tip\Input\TipModificationInputDTO;
 use App\Dto\Tip\Mapper\TipMapper;
 use App\Entity\Tip;
 use App\Repository\TipRepository;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -31,6 +33,7 @@ final class TipController extends AbstractController
         private readonly Security $security
     ){}
 
+    #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
     #[Route(name: 'tip_create', methods: ['POST'])]
     public function create(
         Request $request
@@ -59,18 +62,23 @@ final class TipController extends AbstractController
         );
     }
 
-    #[Route(path: '/{monthNum}', methods: ['GET'], name: 'get_tip_per_month')]
+    #[Route(path: '/month/{monthNum}', methods: ['GET'], name: 'get_tip_per_month')]
     public function getTipsByMonthNum(
         int $monthNum
     ): JsonResponse
     {   
+        if ($monthNum < 1 || $monthNum > 12) {
+            throw new HttpException(statusCode: Response::HTTP_BAD_REQUEST, message: 'invalid month number');
+        }
+
         $tips = $this->tipRepository->findByMonthNum($monthNum);
 
         return new JsonResponse(
             data: array_map(
                 callback: fn(Tip $tip) => $this->tipMapper->TipToOutputDTO($tip),
                 array: $tips
-            )
+            ),
+            status: Response::HTTP_OK
         );
     }
 
@@ -86,10 +94,44 @@ final class TipController extends AbstractController
         );
 
         return new JsonResponse(
-            data: $data
+            data: $data,
+            status: Response::HTTP_OK
         );
     }
 
+    #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
+    #[Route(path: '/{tip}', methods: ['PUT'], name: 'put_tip')]
+    public function modifyTip(
+        Tip $tip,
+        Request $request
+    ): JsonResponse
+    {   
+
+        $tipModificationInputDTO = $this->serializer->deserialize($request->getContent(), TipModificationInputDTO::class, 'json');
+
+        $errors = $this->validator->validate($tipModificationInputDTO);
+
+        if (count($errors) > 0) {
+            throw new HttpException(
+                statusCode: Response::HTTP_BAD_REQUEST, 
+                message: ErrorHelper::spreadContraintViolationsMessages($errors)
+            );
+        }
+
+        $tip = $this->tipService->modifyTip(
+            tip: $tip,
+            content: $tipModificationInputDTO->getContent(),
+            monthsNums: $tipModificationInputDTO->getMonthsNums(),
+            user: $this->security->getUser()
+        );
+        
+        return new JsonResponse(
+            data: $this->tipMapper->TipToOutputDTO($tip),
+            status: Response::HTTP_OK
+        );
+    }
+
+    #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
     #[Route(path: '/{tip}', methods: ['DELETE'], name: 'delete_tip')]
     public function deleteTipById(
         Tip $tip

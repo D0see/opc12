@@ -51,6 +51,46 @@ class TipService {
         return $tip;
     }
 
+    public function modifyTip(
+        Tip $tip,
+        ?string $content,
+        ?array $monthsNums,
+        User $user
+    ): Tip {
+
+        // if ($tip->getUser()->getId() !== $user->getId()) {
+        //     throw new HttpException(statusCode: Response::HTTP_FORBIDDEN, message: 'a user cannot modify another users tip');
+        // }
+
+        if ($monthsNums !== null) {
+
+            $months = $this->monthRepository->findBy(['num' => $monthsNums]);
+            if (count($months) < 1) {
+                throw new HttpException(statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'a tip must have at least one month');
+            }
+
+            $tip->setMonths(new ArrayCollection($months));
+        }
+
+
+        if ($content !== null) {
+            $tip->setContent($content);
+        }
+    
+        $errors = $this->validator->validate($tip);
+
+        if (count($errors) > 0) {
+            throw new HttpException(
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, 
+                message: ErrorHelper::spreadContraintViolationsMessages($errors)
+            );
+        }
+
+        $this->entityManager->flush();
+        
+        return $tip;
+    }
+
     public function deleteTip(Tip $tip) {
         
         $this->entityManager->remove($tip);
