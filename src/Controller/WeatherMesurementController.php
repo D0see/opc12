@@ -21,6 +21,26 @@ final class WeatherMesurementController extends AbstractController
     )
     {}
 
+    #[Route(name: 'get_my_weather_mesurement', methods: ['GET'])]
+    public function getMyWeatherMesurement(): JsonResponse 
+    {
+        /**
+         * @var User
+         */
+        $user = $this->security->getUser();
+
+        $postalCode = $user->getPostalCode()->getCode();
+
+        $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurement($postalCode);
+
+        $weatherMesurementDTO = $this->weatherMesurementMapper->WeatherMesurementToOutputDTO($weatherMesurement);
+
+        return new JsonResponse(
+            data: $weatherMesurementDTO,
+            status: Response::HTTP_OK
+        );
+    }
+
     #[Route(path: '/{postalCode}', name: 'get_weather_mesurement', methods: ['GET'])]
     public function getWeatherMesurement(
         string $postalCode
@@ -31,7 +51,7 @@ final class WeatherMesurementController extends AbstractController
              * @var User
              */
             $user = $this->security->getUser();
-            $postalCode = $user->getPostalCode();
+            $postalCode = $user->getPostalCode()->getCode();
         }
 
         $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurement($postalCode);
