@@ -20,7 +20,7 @@ class WeatherMesurementService {
 
     public function findOrCreateWeatherMesurementWithCaching(
         PostalCode $postalCode,
-        \Datetime $dateMesure
+        \DateTimeImmutable $dateMesure
     ): WeatherMesurement {
 
         $today = new \DateTimeImmutable();
@@ -42,7 +42,7 @@ class WeatherMesurementService {
 
     private function _findOrCreateWeatherMesurement(
         PostalCode $postalCode,
-        \Datetime $dateMesure
+        \DateTimeImmutable $dateMesure
     ): WeatherMesurement {
 
         $weatherMesurement = $this->weatherMesurementRepository->findOneBy(

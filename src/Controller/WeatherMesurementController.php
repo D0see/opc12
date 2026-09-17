@@ -33,7 +33,7 @@ final class WeatherMesurementController extends AbstractController
 
         $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurementWithCaching(
             postalCode: $user->getPostalCode(),
-            dateMesure: new \Datetime()
+            dateMesure: new \DateTimeImmutable()
         );
 
         $weatherMesurementDTO = $this->weatherMesurementMapper->WeatherMesurementToOutputDTO($weatherMesurement);
@@ -54,7 +54,7 @@ final class WeatherMesurementController extends AbstractController
 
         $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurementWithCaching(
             postalCode: $postalCode,
-            dateMesure: new \DateTime()
+            dateMesure: new \DateTimeImmutable()
         );
 
         $weatherMesurementDTO = $this->weatherMesurementMapper->WeatherMesurementToOutputDTO($weatherMesurement);
