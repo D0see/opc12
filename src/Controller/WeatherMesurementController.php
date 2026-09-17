@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\WeatherMesurement\Mapper\WeatherMesurementMapper;
 use App\Entity\User;
+use App\Service\PostalCodeService;
 use App\Service\WeatherMesurementService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -16,6 +17,7 @@ final class WeatherMesurementController extends AbstractController
 {
     public function __construct(
         private readonly WeatherMesurementService $weatherMesurementService,
+        private readonly PostalCodeService $postalCodeService,
         private readonly WeatherMesurementMapper $weatherMesurementMapper,
         private readonly Security $security
     )
@@ -29,9 +31,10 @@ final class WeatherMesurementController extends AbstractController
          */
         $user = $this->security->getUser();
 
-        $postalCode = $user->getPostalCode()->getCode();
-
-        $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurement($postalCode);
+        $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurementWithCaching(
+            postalCode: $user->getPostalCode(),
+            dateMesure: new \Datetime()
+        );
 
         $weatherMesurementDTO = $this->weatherMesurementMapper->WeatherMesurementToOutputDTO($weatherMesurement);
 
@@ -46,15 +49,13 @@ final class WeatherMesurementController extends AbstractController
         string $postalCode
     ): JsonResponse
     {
-        if ($postalCode === "") {
-            /**
-             * @var User
-             */
-            $user = $this->security->getUser();
-            $postalCode = $user->getPostalCode()->getCode();
-        }
 
-        $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurement($postalCode);
+        $postalCode = $this->postalCodeService->findOrCreatePostalCode($postalCode);
+
+        $weatherMesurement = $this->weatherMesurementService->findOrCreateWeatherMesurementWithCaching(
+            postalCode: $postalCode,
+            dateMesure: new \DateTime()
+        );
 
         $weatherMesurementDTO = $this->weatherMesurementMapper->WeatherMesurementToOutputDTO($weatherMesurement);
 
