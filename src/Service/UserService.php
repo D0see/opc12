@@ -83,6 +83,7 @@ class UserService {
 
         if ($code !== null) {
             $postalCode = $this->postalCodeService->findOrCreatePostalCode($code);
+            $user->setPostalCode($postalCode);
         }
 
         if ($password !== null) {

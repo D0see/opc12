@@ -49,7 +49,8 @@ class AppFixtures extends Fixture {
 
         $user = (new User())
         ->setLogin('test')
-        ->setPostalCode($postalCode);
+        ->setPostalCode($postalCode)
+        ->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
 
         $user->setPassword($this->userPasswordHasher->hashPassword($user, 'test'));
 
@@ -57,13 +58,13 @@ class AppFixtures extends Fixture {
 
         $tip = (new Tip())
         ->setUser($user)
-        ->setContent('test tip')
+        ->setContent('tip de janvier')
         ->addMonth($monthMap[1]);
 
         $tip2 = (new Tip())
         ->setUser($user)
-        ->setContent('test tip 2')
-        ->addMonth($monthMap[8]);
+        ->setContent('tip de septembre')
+        ->addMonth($monthMap[9]);
 
         $manager->persist($tip);
         $manager->persist($tip2);
