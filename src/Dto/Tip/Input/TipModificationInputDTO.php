@@ -16,12 +16,12 @@ class TipModificationInputDTO {
     ])]
     public ?array $monthsNums = null;
 
-    public function getContent(): string
+    public function getContent(): ?string
     {
         return $this->content;
     }
 
-    public function getMonthsNums(): array
+    public function getMonthsNums(): ?array
     {
         return $this->monthsNums;
     }

@@ -23,9 +23,7 @@ class WeatherMesurementService {
         \DateTimeImmutable $dateMesure
     ): WeatherMesurement {
 
-        $today = new \DateTimeImmutable();
-
-        $idCache = $postalCode->getCode() . '-' . $today->format('Y-m-d');
+        $idCache = $postalCode->getCode() . '-' . $dateMesure->format('Y-m-d');
 
         $weatherMesurement = $this->cache->get($idCache, function (ItemInterface $item) use ($postalCode, $dateMesure) {
             $item->tag("weatherMesurement");
