@@ -21,10 +21,12 @@ class WeatherBitCurrentWeatherApi {
     ): CurrentWeatherDTO {
         $data =  $this->http->get(
             path: '/current' .
-                '?key=' . urlencode((string) $this->apiKey) .
+                '?key=' . urlencode($this->apiKey) .
                 '&postal_code=' . urlencode($postalCode) .
                 '&country=' . urlencode($countryCode)
         )->toArray()['data'][0];
+
+        dump($data);
 
         return CurrentWeatherDTO::fromArray($data);
     }

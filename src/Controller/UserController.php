@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\User\Input\UserCreationInputDTO;
 use App\Dto\User\Input\UserModificationInputDTO;
+use App\Dto\User\Mapper\UserMapper;
 use App\Entity\User;
 use App\Service\UserService;
 use ErrorHelper;
@@ -25,6 +26,7 @@ final class UserController extends AbstractController
         private readonly SerializerInterface $serializer,
         private readonly ValidatorInterface $validator,
         private readonly UserService $userService,
+        private readonly UserMapper $userMapper
     ){}
     
     #[Route(path: '/create', name: 'user_create', methods: ['POST'])]
@@ -43,13 +45,15 @@ final class UserController extends AbstractController
             );
         }
 
-        $this->userService->createUser(
+        $user = $this->userService->createUser(
             username: $userCreationInputDTO->getUsername(),
             password: $userCreationInputDTO->getPassword(),
             code: $userCreationInputDTO->getPostalCode()
         );
         
-        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
+        return new JsonResponse(
+            data: $this->userMapper->userToInfosOutputDTO(user: $user),
+            status: Response::HTTP_CREATED);
     }
 
     #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
@@ -70,14 +74,17 @@ final class UserController extends AbstractController
             );
         }
 
-        $this->userService->modifyUser(
+        $user = $this->userService->modifyUser(
             username: $userModificationInput->getUsername(),
             password: $userModificationInput->getPassword(),
             code: $userModificationInput->getPostalCode(),
             user: $user
         );
         
-        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
+        return new JsonResponse(
+            status: Response::HTTP_NO_CONTENT,
+            data: $this->userMapper->userToInfosOutputDTO(user: $user)
+        );
     }
 
     #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
