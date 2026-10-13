@@ -26,7 +26,12 @@ class WeatherMesurementService {
         $idCache = $postalCode->getCode() . '-' . $dateMesure->format('Y-m-d');
 
         $weatherMesurement = $this->cache->get($idCache, function (ItemInterface $item) use ($postalCode, $dateMesure) {
+            
+            $this->cache->invalidateTags([$postalCode->getCode()]);
+            
             $item->tag("weatherMesurement");
+            
+            $item->tag(["postalCodeMesurement", $postalCode->getCode()]);
             
             return $this->_findOrCreateWeatherMesurement(
                 postalCode: $postalCode,

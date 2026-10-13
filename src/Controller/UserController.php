@@ -49,7 +49,7 @@ final class UserController extends AbstractController
             code: $userCreationInputDTO->getPostalCode()
         );
         
-        return new JsonResponse(status: Response::HTTP_CREATED);
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 
     #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
@@ -77,7 +77,7 @@ final class UserController extends AbstractController
             user: $user
         );
         
-        return new JsonResponse(status: Response::HTTP_OK);
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 
     #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
@@ -89,6 +89,6 @@ final class UserController extends AbstractController
 
         $this->userService->deleteUser($user);
         
-        return new JsonResponse(status: Response::HTTP_OK);
+        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 }
