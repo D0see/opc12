@@ -71,7 +71,7 @@ L’API utilise le système JWT de Symfony.
 ### Login
 
 ```http
-POST /api/login_check
+POST /api/auth
 ```
 
 Le token obtenu doit être envoyé dans le header :
