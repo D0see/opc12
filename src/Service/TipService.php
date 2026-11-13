@@ -8,8 +8,7 @@ use App\Repository\MonthRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use ErrorHelper;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class TipService {
@@ -26,8 +25,8 @@ class TipService {
     ): Tip {
 
         $months = $this->monthRepository->findBy(['num' => $monthsNums]);
-        if (count($months) < 1) {
-            throw new HttpException(statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'a tip must have at least one month');
+        if ($monthsNums === [] || count($months) !== count(array_unique($monthsNums))) {
+            throw new BadRequestHttpException('Select at least one valid month');
         }
 
         $tip = (new Tip())
@@ -38,10 +37,7 @@ class TipService {
         $errors = $this->validator->validate($tip);
 
         if (count($errors) > 0) {
-            throw new HttpException(
-                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, 
-                message: ErrorHelper::spreadContraintViolationsMessages($errors)
-            );
+            throw new BadRequestHttpException(ErrorHelper::spreadContraintViolationsMessages($errors));
         }
 
         $this->entityManager->persist($tip);
@@ -65,8 +61,8 @@ class TipService {
         if ($monthsNums !== null) {
 
             $months = $this->monthRepository->findBy(['num' => $monthsNums]);
-            if (count($months) < 1) {
-                throw new HttpException(statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'a tip must have at least one month');
+            if ($monthsNums === [] || count($months) !== count(array_unique($monthsNums))) {
+                throw new BadRequestHttpException('Select at least one valid month');
             }
 
             $tip->setMonths(new ArrayCollection($months));
@@ -80,10 +76,7 @@ class TipService {
         $errors = $this->validator->validate($tip);
 
         if (count($errors) > 0) {
-            throw new HttpException(
-                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, 
-                message: ErrorHelper::spreadContraintViolationsMessages($errors)
-            );
+            throw new BadRequestHttpException(ErrorHelper::spreadContraintViolationsMessages($errors));
         }
 
         $this->entityManager->flush();

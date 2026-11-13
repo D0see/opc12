@@ -82,7 +82,7 @@ final class UserController extends AbstractController
         );
         
         return new JsonResponse(
-            status: Response::HTTP_NO_CONTENT,
+            status: Response::HTTP_OK,
             data: $this->userMapper->userToInfosOutputDTO(user: $user)
         );
     }

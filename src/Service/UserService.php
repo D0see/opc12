@@ -7,6 +7,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use ErrorHelper;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -49,10 +50,7 @@ class UserService {
         $errors = $this->validator->validate($user);
 
         if (count($errors) > 0) {
-            throw new HttpException(
-                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, 
-                message: ErrorHelper::spreadContraintViolationsMessages($errors)
-            );
+            throw new BadRequestHttpException(ErrorHelper::spreadContraintViolationsMessages($errors));
         }
 
         $user->setPassword($this->userPasswordHasher->hashPassword($user, $password));
@@ -93,10 +91,7 @@ class UserService {
         $errors = $this->validator->validate($user);
 
         if (count($errors) > 0) {
-            throw new HttpException(
-                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR, 
-                message: ErrorHelper::spreadContraintViolationsMessages($errors)
-            );
+            throw new BadRequestHttpException(ErrorHelper::spreadContraintViolationsMessages($errors));
         }
 
         $this->entityManager->flush();
