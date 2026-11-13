@@ -141,7 +141,7 @@ final class TipController extends AbstractController
         $this->tipService->deleteTip($tip);
         
         return new JsonResponse(
-            status: Response::HTTP_OK
+            status: Response::HTTP_NO_CONTENT
         );
     }
 }
