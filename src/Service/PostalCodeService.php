@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Adapter\PostalCode\PostalCodeAdapterInterface;
 use App\Entity\PostalCode;
 use App\Repository\PostalCodeRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,6 +12,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class PostalCodeService {
     public function __construct(
+        private readonly PostalCodeAdapterInterface $postalCodeAdapter,
         private readonly PostalCodeRepository $postalCodeRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly ValidatorInterface $validator
@@ -30,6 +32,7 @@ class PostalCodeService {
 
     private function createPostalCode(string $code): PostalCode 
     {
+        $this->validatePostalcode($code);
 
         $newPostalCode = (new PostalCode())->setCode($code);
 
@@ -44,5 +47,12 @@ class PostalCodeService {
         $this->entityManager->flush();
 
         return $newPostalCode;
+    }
+
+    public function validatePostalcode(string $code): void
+    {
+        if (count($this->postalCodeAdapter->getCommunesByPostalCode($code)) === 0) {
+            throw new BadRequestHttpException('invalid postal code');
+        }
     }
 }

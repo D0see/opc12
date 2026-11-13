@@ -53,7 +53,8 @@ final class UserController extends AbstractController
         
         return new JsonResponse(
             data: $this->userMapper->userToInfosOutputDTO(user: $user),
-            status: Response::HTTP_CREATED);
+            status: Response::HTTP_CREATED
+        );
     }
 
     #[IsGranted('ROLE_ADMIN', message: 'route only accessible to admins')]
